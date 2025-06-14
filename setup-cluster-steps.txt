@@ -92,3 +92,11 @@ Step 8 : Run in worker node to join the worker node with master node
 
 kubeadm join IP:6443 --token j1hl3p.0pyj88ebzs44sa9u \
         --discovery-token-ca-cert-hash sha256:jbjkbjkbhjvhgcfgxfxhfkjc45rklghdogisdhagoidsbzgosdbfdsjfugyseihhnytvf7677i
+
+
+
+RUN COMMAND IN MASTERNODE
+
+kubectl get nodes 
+kubectl get pods 
+kubectl describe pod <..id...>
