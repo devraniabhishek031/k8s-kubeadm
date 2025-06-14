@@ -1,0 +1,117 @@
+Architecture:             x86_64
+Ubuntu :                  Any version latest and supported
+
+
+Minimum 2 machines (or VMs) with Ubuntu 20.04 or later:
+
+1 Master node  , 1+ Worker nodes
+
+RUN IN BOTH NODES STEP1 TO STEP4
+
+Step 1: Disable Swap
+
+sudo swapoff -a
+sudo sed -i '/ swap / s/^/#/' /etc/
+
+Question :  Why need to disable the swap 
+Answer: Swap is memory used form the disk when the ram memory is full then os using the swap memory
+but in this case when OOM is case is occure in the contianer so it will use the swap memory instead of killing the container.
+
+
+
+ Step 2: Set Hostnames
+
+
+sudo hostnamectl set-hostname master-node
+sudo hostnamectl set-hostname worker-node  # run this in worker node
+
+
+Step 3:  Install Container Runtime   
+
+
+sudo apt update
+sudo apt install -y containerd
+
+# Configure containerd
+sudo mkdir -p /etc/containerd
+containerd config default | sudo tee /etc/containerd/config.toml
+
+# Set systemd cgroup driver
+sudo sed -i 's/SystemdCgroup = false/SystemdCgroup = true/' /etc/containerd/config.toml
+
+sudo systemctl restart containerd
+sudo systemctl enable containerd
+
+
+Step 4: Install kubeadm, kubelet, and kubectl
+
+Follow the docs:----
+
+https://v1-31.docs.kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
+
+
+ Step 5: Initialize the Master Node(Run this in master node)
+
+sudo kubeadm init --pod-network-cidr=192.168.0.0/16
+
+
+Save the given result
+
+
+Example: 
+
+To start using your cluster, you need to run the following as a regular user:
+
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+Then you can join any number of worker nodes by running the following on each as root:
+
+kubeadm join IP:6443 --token j1hl3p.0pyj88ebzs44sa9u \
+        --discovery-token-ca-cert-hash sha256:jbjkbjkbhjvhgcfgxfxhfkjchnytvf7677i
+
+
+Step 6: Run on Master node 
+
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+
+Step 7: Run on master node
+
+kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.27.0/manifests/calico.yaml
+
+
+if error came run the command :  
+
+1. Enable IP Forwarding Immediately:
+
+sudo sysctl -w net.ipv4.ip_forward=1
+sudo sed -i 's/^#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/' /etc/sysctl.conf
+sudo sysctl -p
+
+
+sudo kubeadm init --pod-network-cidr=192.168.0.0/16
+
+
+Step 8 : Run in worker node to join the worker node with master node 
+
+kubeadm join IP:6443 --token j1hl3p.0pyj88ebzs44sa9u \
+        --discovery-token-ca-cert-hash sha256:jbjkbjkbhjvhgcfgxfxhfkjc45rklghdogisdhagoidsbzgosdbfdsjfugyseihhnytvf7677i
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
